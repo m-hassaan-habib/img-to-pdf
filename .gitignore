@@ -1,0 +1,32 @@
+
+---
+
+### 📄 `.gitignore`
+```gitignore
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore virtual environment
+venv/
+env/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore logs and temp files
+*.log
+*.tmp
+
+# Ignore compiled files
+*.egg-info/
+*.dist-info/
+
+# Ignore generated PDFs & images
+*.pdf
+*.jpg
+*.png
+output_*.*

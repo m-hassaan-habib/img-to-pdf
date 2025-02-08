@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to PDF Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2 {
+            color: #f0b400;
+        }
+
+        .upload-container {
+            background: #292929;
+            border-radius: 12px;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            margin: auto;
+            box-shadow: 0px 4px 10px rgba(255, 215, 0, 0.2);
+        }
+
+        input[type="file"] {
+            background: #333;
+            color: #f0b400;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            cursor: pointer;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        #preview {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .image-preview {
+            background: #2d2d2d;
+            border-radius: 10px;
+            margin: 10px;
+            overflow: hidden;
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0px 2px 5px rgba(255, 215, 0, 0.2);
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        button {
+            background: #f0b400;
+            color: #1e1e1e;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #ffd700;
+        }
+
+        #download {
+            display: none;
+            text-decoration: none;
+            background: #008CBA;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 20px;
+            box-shadow: 0px 4px 10px rgba(0, 140, 186, 0.3);
+        }
+
+        #download:hover {
+            background: #005f73;
+        }
+    </style>
+</head>
+<body>
+    <h2>Upload Images & Convert to PDF</h2>
+
+    <div class="upload-container">
+        <input type="file" id="fileInput" multiple accept="image/*">
+        <div id="preview"></div>
+        <button onclick="uploadImages()">Generate PDF</button>
+        <a id="download" href="#" download>Download PDF</a>
+    </div>
+
+    <script>
+        function previewImages(files) {
+            let preview = document.getElementById("preview");
+            preview.innerHTML = "";
+
+            for (let file of files) {
+                let reader = new FileReader();
+                reader.onload = function(event) {
+                    let div = document.createElement("div");
+                    div.className = "image-preview";
+                    let img = document.createElement("img");
+                    img.src = event.target.result;
+                    div.appendChild(img);
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        document.getElementById("fileInput").addEventListener("change", function() {
+            previewImages(this.files);
+        });
+
+        function uploadImages() {
+            let formData = new FormData();
+            let files = document.getElementById("fileInput").files;
+
+            if (files.length < 1 || files.length > 9) {
+                alert("Please select between 1 and 9 images.");
+                return;
+            }
+
+            for (let file of files) {
+                formData.append("images", file);
+            }
+
+            fetch("/upload", { method: "POST", body: formData })
+                .then(response => response.blob())
+                .then(blob => {
+                    let url = window.URL.createObjectURL(blob);
+                    let download = document.getElementById("download");
+                    download.href = url;
+                    download.style.display = "block";
+                })
+                .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

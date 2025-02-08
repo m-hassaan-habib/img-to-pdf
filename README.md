@@ -14,7 +14,7 @@ This is a web-based **Image to PDF Converter** that allows users to upload image
 pip install -r requirements.txt
 ```
 
-## 🛠️ Run the app
+### 2️⃣ Run the app
 ```bash
 python app.py
 ```
