@@ -1,160 +1,667 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to PDF Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #1e1e1e;
-            color: #e0e0e0;
-            text-align: center;
-            padding: 20px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPDF Converter</title>
+  <style>
+    :root{
+      --bg:#f6f8fc;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --border:#e2e8f0;
+      --shadow:0 16px 40px rgba(15,23,42,.08);
+      --primary:#6d6bf2;
+      --primary-2:#7d7bf6;
+      --primary-text:#ffffff;
+      --ring:rgba(109,107,242,.25);
+      --drop:#f8fafc;
+      --drop-border:#cbd5e1;
+      --thumb:#f1f5f9;
+      --overlay:rgba(255,255,255,.65);
+      --loader-bg:#ffffff;
+      --loader-border:#e2e8f0;
+    }
 
-        h2 {
-            color: #f0b400;
-        }
+    html[data-theme="dark"]{
+      --bg:#0b1020;
+      --card:#0f172a;
+      --text:#e5e7eb;
+      --muted:#9aa5b1;
+      --border:#1f2a44;
+      --shadow:0 18px 50px rgba(0,0,0,.45);
+      --primary:#8b88ff;
+      --primary-2:#a19eff;
+      --primary-text:#0b1020;
+      --ring:rgba(161,158,255,.22);
+      --drop:#0b132a;
+      --drop-border:#233150;
+      --thumb:#0b132a;
+      --overlay:rgba(15,23,42,.65);
+      --loader-bg:#0f172a;
+      --loader-border:#233150;
+    }
 
-        .upload-container {
-            background: #292929;
-            border-radius: 12px;
-            padding: 20px;
-            width: 80%;
-            max-width: 500px;
-            margin: auto;
-            box-shadow: 0px 4px 10px rgba(255, 215, 0, 0.2);
-        }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
 
-        input[type="file"] {
-            background: #333;
-            color: #f0b400;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            cursor: pointer;
-            border-radius: 6px;
-            text-align: center;
-        }
+    .nav{
+      height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:0 16px;
+      position:sticky;
+      top:0;
+      background:linear-gradient(to bottom, rgba(255,255,255,.7), rgba(255,255,255,0));
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(226,232,240,.4);
+      z-index:10;
+    }
 
-        #preview {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 20px;
-        }
+    html[data-theme="dark"] .nav{
+      background:linear-gradient(to bottom, rgba(11,16,32,.72), rgba(11,16,32,0));
+      border-bottom:1px solid rgba(35,49,80,.5);
+    }
 
-        .image-preview {
-            background: #2d2d2d;
-            border-radius: 10px;
-            margin: 10px;
-            overflow: hidden;
-            position: relative;
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0px 2px 5px rgba(255, 215, 0, 0.2);
-        }
+    .nav-inner{
+      width:min(980px, 100%);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
 
-        .image-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      letter-spacing:-.02em;
+    }
 
-        button {
-            background: #f0b400;
-            color: #1e1e1e;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: 0.3s;
-        }
+    .brand-badge{
+      width:36px;height:36px;
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      background:rgba(109,107,242,.12);
+      border:1px solid rgba(109,107,242,.18);
+    }
 
-        button:hover {
-            background: #ffd700;
-        }
+    html[data-theme="dark"] .brand-badge{
+      background:rgba(161,158,255,.10);
+      border:1px solid rgba(161,158,255,.18);
+    }
 
-        #download {
-            display: none;
-            text-decoration: none;
-            background: #008CBA;
-            color: white;
-            padding: 12px 20px;
-            font-size: 16px;
-            border-radius: 8px;
-            display: inline-block;
-            margin-top: 20px;
-            box-shadow: 0px 4px 10px rgba(0, 140, 186, 0.3);
-        }
+    .toggle{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      cursor:pointer;
+      box-shadow: 0 6px 18px rgba(15,23,42,.06);
+      transition:transform .08s ease, border-color .15s ease, box-shadow .15s ease;
+      user-select:none;
+    }
 
-        #download:hover {
-            background: #005f73;
-        }
-    </style>
+    .toggle:active{transform:scale(.98)}
+    .toggle:focus{outline:none; box-shadow:0 0 0 4px var(--ring), 0 6px 18px rgba(15,23,42,.06)}
+
+    #themeIcon{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        line-height:0;
+    }
+
+    #themeIcon svg{
+        display:block;
+    }
+
+    #themeLabel{
+        line-height:1;
+    }
+
+    .container{
+      width:min(980px, 100%);
+      margin:0 auto;
+      padding:28px 16px 40px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .card{
+      width:min(560px, 100%);
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      padding:22px;
+    }
+
+    .hero{
+      display:flex;
+      align-items:center;
+      flex-direction:column;
+      text-align:center;
+      gap:8px;
+      padding:10px 6px 18px;
+    }
+
+    .hero-icon{
+      width:44px;height:44px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:rgba(109,107,242,.12);
+      border:1px solid rgba(109,107,242,.18);
+    }
+
+    html[data-theme="dark"] .hero-icon{
+      background:rgba(161,158,255,.10);
+      border:1px solid rgba(161,158,255,.18);
+    }
+
+    .title{
+      margin:0;
+      font-size:28px;
+      line-height:1.15;
+      letter-spacing:-.03em;
+    }
+
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.4;
+    }
+
+    .dropzone{
+      background:var(--drop);
+      border:2px dashed var(--drop-border);
+      border-radius:18px;
+      padding:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      min-height:120px;
+      cursor:pointer;
+      transition:border-color .15s ease, background .15s ease, transform .08s ease;
+      outline:none;
+    }
+
+    .dropzone:hover{border-color:rgba(109,107,242,.55)}
+    .dropzone:active{transform:scale(.995)}
+    .dropzone.dragover{
+      border-color:var(--primary);
+      background:rgba(109,107,242,.08);
+    }
+
+    .drop-inner{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+    }
+
+    .drop-title{
+      font-weight:650;
+      letter-spacing:-.01em;
+    }
+
+    .drop-hint{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    input[type="file"]{display:none}
+
+    .meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:12px;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(148,163,184,.10);
+      color:var(--text);
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    .grid{
+      margin-top:16px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+    }
+
+    @media (max-width: 520px){
+      .grid{grid-template-columns: repeat(2, 1fr);}
+      .title{font-size:24px;}
+      .card{padding:18px;}
+    }
+
+    .thumb{
+      background:var(--thumb);
+      border:1px solid var(--border);
+      border-radius:16px;
+      overflow:hidden;
+      aspect-ratio:1/1;
+      display:grid;
+      place-items:center;
+    }
+
+    .thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .actions{
+      margin-top:18px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .btn{
+      width:100%;
+      border:none;
+      border-radius:16px;
+      padding:14px 16px;
+      font-size:15px;
+      font-weight:650;
+      cursor:pointer;
+      background:linear-gradient(180deg, var(--primary-2), var(--primary));
+      color:var(--primary-text);
+      box-shadow:0 12px 28px rgba(109,107,242,.28);
+      transition:transform .08s ease, filter .15s ease, box-shadow .15s ease;
+    }
+
+    .btn:hover{filter:brightness(1.02)}
+    .btn:active{transform:scale(.99)}
+    .btn:disabled{
+      cursor:not-allowed;
+      filter:saturate(.6) brightness(.85);
+      box-shadow:none;
+      opacity:.65;
+    }
+
+    .error{
+      display:none;
+      margin-top:12px;
+      border-radius:16px;
+      padding:12px 14px;
+      border:1px solid rgba(239,68,68,.25);
+      background:rgba(239,68,68,.08);
+      color:rgba(239,68,68,.95);
+      text-align:left;
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:var(--overlay);
+      z-index:9999;
+      padding:20px;
+    }
+
+    .overlay-card{
+      width:min(420px, 100%);
+      background:var(--loader-bg);
+      border:1px solid var(--loader-border);
+      border-radius:20px;
+      box-shadow:var(--shadow);
+      padding:18px 18px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .spinner{
+      width:42px;height:42px;
+      border-radius:999px;
+      border:4px solid rgba(148,163,184,.25);
+      border-top-color: var(--primary);
+      animation:spin .9s linear infinite;
+      flex:0 0 auto;
+    }
+
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .overlay-text{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      text-align:left;
+    }
+
+    .overlay-title{
+      font-weight:750;
+      letter-spacing:-.01em;
+    }
+
+    .overlay-sub{
+      font-size:13px;
+      color:var(--muted);
+    }
+  </style>
 </head>
+
 <body>
-    <h2>Upload Images & Convert to PDF</h2>
+  <div class="nav">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <span>IPDF</span>
+      </div>
 
-    <div class="upload-container">
-        <input type="file" id="fileInput" multiple accept="image/*">
-        <div id="preview"></div>
-        <button onclick="uploadImages()">Generate PDF</button>
-        <a id="download" href="#" download>Download PDF</a>
+      <button class="toggle" id="themeToggle" type="button" aria-label="Toggle theme">
+        <span id="themeIcon" aria-hidden="true"></span>
+        <span id="themeLabel" style="font-weight:650; font-size:13px;">Dark</span>
+      </button>
     </div>
+  </div>
 
-    <script>
-        function previewImages(files) {
-            let preview = document.getElementById("preview");
-            preview.innerHTML = "";
+  <div class="container">
+    <div class="card">
+      <div class="hero">
+        <div class="hero-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 13l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h1 class="title">IPDF Converter</h1>
+        <p class="subtitle">Upload up to 9 images and generate a printable A4 PDF</p>
+      </div>
 
-            for (let file of files) {
-                let reader = new FileReader();
-                reader.onload = function(event) {
-                    let div = document.createElement("div");
-                    div.className = "image-preview";
-                    let img = document.createElement("img");
-                    img.src = event.target.result;
-                    div.appendChild(img);
-                    preview.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            }
+      <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload images">
+        <div class="drop-inner">
+          <div class="drop-title">Drop images here or click to browse</div>
+          <div class="drop-hint">PNG, JPG supported (1–9 images)</div>
+        </div>
+        <input id="fileInput" type="file" accept="image/*" multiple />
+      </div>
+
+      <div class="meta">
+        <div class="pill" id="countPill">0 selected</div>
+        <div class="pill">Max: 9</div>
+      </div>
+
+      <div class="error" id="errorBox"></div>
+
+      <div class="grid" id="preview"></div>
+
+      <div class="actions">
+        <button class="btn" id="primaryBtn" type="button" disabled>Generate PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="overlay-card" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="overlay-text">
+        <div class="overlay-title" id="overlayTitle">Working…</div>
+        <div class="overlay-sub" id="overlaySub">Please wait.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const htmlEl = document.documentElement;
+    const themeToggle = document.getElementById("themeToggle");
+    const themeIcon = document.getElementById("themeIcon");
+    const themeLabel = document.getElementById("themeLabel");
+
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+    const preview = document.getElementById("preview");
+    const errorBox = document.getElementById("errorBox");
+    const countPill = document.getElementById("countPill");
+    const primaryBtn = document.getElementById("primaryBtn");
+
+    const overlay = document.getElementById("overlay");
+    const overlayTitle = document.getElementById("overlayTitle");
+    const overlaySub = document.getElementById("overlaySub");
+
+    let selectedFiles = [];
+    let pdfBlobUrl = null;
+
+    function sunSvg(){
+      return `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>`;
+    }
+
+    function moonSvg(){
+      return `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M21 13.5A8.5 8.5 0 0 1 10.5 3a6.5 6.5 0 1 0 10.5 10.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>`;
+    }
+
+    function setTheme(theme){
+      htmlEl.setAttribute("data-theme", theme);
+      localStorage.setItem("theme", theme);
+      const isDark = theme === "dark";
+      themeIcon.innerHTML = isDark ? sunSvg() : moonSvg();
+      themeLabel.textContent = isDark ? "Light" : "Dark";
+    }
+
+    const savedTheme = localStorage.getItem("theme");
+    setTheme(savedTheme === "dark" ? "dark" : "light");
+
+    themeToggle.addEventListener("click", () => {
+      const curr = htmlEl.getAttribute("data-theme");
+      setTheme(curr === "dark" ? "light" : "dark");
+    });
+
+    function showError(msg){
+      errorBox.style.display = "block";
+      errorBox.textContent = msg;
+    }
+
+    function clearError(){
+      errorBox.style.display = "none";
+      errorBox.textContent = "";
+    }
+
+    function setOverlay(show, title, sub){
+      overlay.style.display = show ? "flex" : "none";
+      overlay.setAttribute("aria-hidden", show ? "false" : "true");
+      overlayTitle.textContent = title || "Working…";
+      overlaySub.textContent = sub || "Please wait.";
+    }
+
+    function setPrimaryState(state){
+      if (state === "generate") {
+        primaryBtn.disabled = !(selectedFiles.length >= 1 && selectedFiles.length <= 9);
+        primaryBtn.textContent = "Generate PDF";
+        primaryBtn.dataset.mode = "generate";
+      } else {
+        primaryBtn.disabled = !pdfBlobUrl;
+        primaryBtn.textContent = "Download PDF";
+        primaryBtn.dataset.mode = "download";
+      }
+    }
+
+    function updateCount(){
+      countPill.textContent = `${selectedFiles.length} selected`;
+    }
+
+    function renderPreview(files){
+      preview.innerHTML = "";
+      const frag = document.createDocumentFragment();
+
+      files.forEach(file => {
+        const url = URL.createObjectURL(file);
+        const cell = document.createElement("div");
+        cell.className = "thumb";
+        const img = document.createElement("img");
+        img.src = url;
+        img.onload = () => URL.revokeObjectURL(url);
+        cell.appendChild(img);
+        frag.appendChild(cell);
+      });
+
+      preview.appendChild(frag);
+    }
+
+    function setFiles(fileList){
+      clearError();
+      const files = Array.from(fileList || []).filter(f => f.type && f.type.startsWith("image/"));
+
+      if (files.length < 1) {
+        selectedFiles = [];
+        pdfBlobUrl && URL.revokeObjectURL(pdfBlobUrl);
+        pdfBlobUrl = null;
+        renderPreview([]);
+        updateCount();
+        setPrimaryState("generate");
+        return;
+      }
+
+      if (files.length > 9) {
+        showError("Please select between 1 and 9 images.");
+        return;
+      }
+
+      selectedFiles = files;
+      pdfBlobUrl && URL.revokeObjectURL(pdfBlobUrl);
+      pdfBlobUrl = null;
+
+      renderPreview(selectedFiles);
+      updateCount();
+      setPrimaryState("generate");
+    }
+
+    dropzone.addEventListener("click", () => fileInput.click());
+    dropzone.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") fileInput.click();
+    });
+
+    fileInput.addEventListener("change", (e) => setFiles(e.target.files));
+
+    ["dragenter","dragover"].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.add("dragover");
+      });
+    });
+
+    ["dragleave","drop"].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropzone.classList.remove("dragover");
+      });
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      setFiles(e.dataTransfer.files);
+    });
+
+    async function generatePdf(){
+      clearError();
+
+      if (selectedFiles.length < 1 || selectedFiles.length > 9) {
+        showError("Please select between 1 and 9 images.");
+        return;
+      }
+
+      setOverlay(true, "Generating PDF", "Uploading images and building your A4 PDF…");
+      primaryBtn.disabled = true;
+
+      const formData = new FormData();
+      selectedFiles.forEach(f => formData.append("images", f, f.name));
+
+      try {
+        const resp = await fetch("/upload", { method: "POST", body: formData });
+        if (!resp.ok) {
+          const t = await resp.text().catch(() => "");
+          throw new Error(t || `Server error (${resp.status})`);
         }
 
-        document.getElementById("fileInput").addEventListener("change", function() {
-            previewImages(this.files);
-        });
+        const blob = await resp.blob();
+        if (!blob || blob.size === 0) throw new Error("Empty PDF received from server.");
 
-        function uploadImages() {
-            let formData = new FormData();
-            let files = document.getElementById("fileInput").files;
+        pdfBlobUrl && URL.revokeObjectURL(pdfBlobUrl);
+        pdfBlobUrl = URL.createObjectURL(blob);
 
-            if (files.length < 1 || files.length > 9) {
-                alert("Please select between 1 and 9 images.");
-                return;
-            }
+        setPrimaryState("download");
+      } catch (err) {
+        showError(String(err?.message || err || "Something went wrong."));
+        setPrimaryState("generate");
+      } finally {
+        setOverlay(false);
+      }
+    }
 
-            for (let file of files) {
-                formData.append("images", file);
-            }
+    function downloadPdf(){
+      if (!pdfBlobUrl) return;
 
-            fetch("/upload", { method: "POST", body: formData })
-                .then(response => response.blob())
-                .then(blob => {
-                    let url = window.URL.createObjectURL(blob);
-                    let download = document.getElementById("download");
-                    download.href = url;
-                    download.style.display = "block";
-                })
-                .catch(error => console.error("Error:", error));
-        }
-    </script>
+      setOverlay(true, "Downloading", "Preparing your download…");
+      primaryBtn.disabled = true;
+
+      const a = document.createElement("a");
+      a.href = pdfBlobUrl;
+      a.download = "images_a4.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      setTimeout(() => {
+        setOverlay(false);
+        setPrimaryState("download");
+      }, 900);
+    }
+
+    primaryBtn.addEventListener("click", () => {
+      const mode = primaryBtn.dataset.mode || "generate";
+      if (mode === "download") downloadPdf();
+      else generatePdf();
+    });
+
+    updateCount();
+    setPrimaryState("generate");
+  </script>
 </body>
 </html>
